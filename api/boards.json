@@ -8,6 +8,33 @@
       "date": "2026-06-27",
       "prev_date": "2026-06-26",
       "category_count": 18
+    },
+    {
+      "slug": "female-read",
+      "name": "女频阅读榜",
+      "channel": "female",
+      "has_genres": true,
+      "date": "2026-06-27",
+      "prev_date": "",
+      "category_count": 18
+    },
+    {
+      "slug": "male-new",
+      "name": "男频新书榜",
+      "channel": "male",
+      "has_genres": true,
+      "date": "2026-06-27",
+      "prev_date": "",
+      "category_count": 19
+    },
+    {
+      "slug": "male-read",
+      "name": "男频阅读榜",
+      "channel": "male",
+      "has_genres": true,
+      "date": "2026-06-27",
+      "prev_date": "",
+      "category_count": 19
     }
   ]
 }
