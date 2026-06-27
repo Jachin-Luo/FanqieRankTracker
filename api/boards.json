@@ -1,0 +1,13 @@
+{
+  "boards": [
+    {
+      "slug": "female-new",
+      "name": "女频新书榜",
+      "channel": "female",
+      "has_genres": true,
+      "date": "2026-06-27",
+      "prev_date": "2026-06-26",
+      "category_count": 18
+    }
+  ]
+}

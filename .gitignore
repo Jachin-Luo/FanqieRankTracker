@@ -1,2 +1,13 @@
 **/.DS_Store
 .DS_Store
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+
+# 抓取断点续跑状态（每日生成，不应入库）
+task_state_*.json
+
+# IDE / 虚拟环境
+.idea/
+.venv/

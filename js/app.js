@@ -12,15 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateInput = document.getElementById('date-input');
     const datePrevBtn = document.getElementById('date-prev');
     const dateNextBtn = document.getElementById('date-next');
+    const boardTabs = document.getElementById('board-tabs');
 
     let allData = null;
     let typingTimer = null;
     let availableDates = [];   // sorted list of "YYYY-MM-DD"
     let currentDateIndex = -1; // index into availableDates
     let currentCategory = null; // preserve selected category across date switches
+    let boards = [];           // api/boards.json 列表
+    let currentSlug = Boards.DEFAULT_SLUG;
+    let P = Boards.paths(currentSlug); // 当前榜单路径工厂
 
     // Cache-busting: 每10分钟一个新key，避免浏览器缓存旧JSON
-    const cacheBuster = `v=${Math.floor(Date.now() / 600000)}`;
+    const cacheBuster = Boards.cacheBuster;
+
 
     // ========== Copy Toast ==========
     const copyToast = document.createElement('div');
@@ -169,27 +174,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // ========== Load dates index, then load latest ==========
-    fetch(`data/dates.json?${cacheBuster}`)
-        .then(r => r.ok ? r.json() : Promise.reject('No dates.json'))
-        .then(idx => {
-            availableDates = idx.dates || [];
-            if (availableDates.length > 0) {
-                // Set min/max for native date input
-                dateInput.min = availableDates[0];
-                dateInput.max = availableDates[availableDates.length - 1];
-            }
-            // Start by loading latest_ranks.json (already has trend data baked in)
-            return loadLatestData();
-        })
-        .catch(() => {
-            // Fallback: no dates.json available, just load latest
-            console.warn('dates.json not found, falling back to latest only');
-            loadLatestData();
+    // ========== Bootstrap: 先加载榜单列表，渲染 Tab，再载入选中榜单 ==========
+    Boards.loadBoards().then(list => {
+        boards = list;
+        const slugs = boards.map(b => b.slug);
+        currentSlug = Boards.currentSlug(slugs);
+        Boards.setSlug(currentSlug);
+        P = Boards.paths(currentSlug);
+        renderBoardTabs();
+        loadBoardData();
+    });
+
+    function renderBoardTabs() {
+        if (!boardTabs) return;
+        Boards.renderTabs(boardTabs, boards, currentSlug, slug => {
+            if (slug === currentSlug) return;
+            currentSlug = slug;
+            Boards.setSlug(slug);
+            P = Boards.paths(slug);
+            currentCategory = null; // 不同榜分类不同，重置选中
+            renderBoardTabs();
+            loadBoardData();
         });
+        // 让「风向标」链接带上当前榜单
+        const trendLink = document.querySelector('.trend-link-btn');
+        if (trendLink) trendLink.href = `trend.html?board=${encodeURIComponent(currentSlug)}`;
+    }
+
+    // 载入当前榜单的日期索引 + 最新数据
+    function loadBoardData() {
+        availableDates = [];
+        currentDateIndex = -1;
+        return fetch(P.dates)
+            .then(r => r.ok ? r.json() : Promise.reject('No dates.json'))
+            .then(idx => {
+                availableDates = idx.dates || [];
+                if (availableDates.length > 0) {
+                    dateInput.min = availableDates[0];
+                    dateInput.max = availableDates[availableDates.length - 1];
+                }
+                return loadLatestData();
+            })
+            .catch(() => {
+                console.warn('dates.json not found, falling back to latest only');
+                return loadLatestData();
+            });
+    }
 
     function loadLatestData() {
-        return fetch(`data/latest_ranks.json?${cacheBuster}`)
+        return fetch(P.latest)
             .then(r => {
                 if (!r.ok) throw new Error('Network error');
                 return r.json();
@@ -214,8 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function loadDateData(dateStr) {
-        // dateStr = "YYYY-MM-DD", file = fanqie_female_new_ranks_YYYYMMDD.json
-        const fileDateStr = dateStr.replace(/-/g, '');
         const isLatest = currentDateIndex === availableDates.length - 1;
 
         if (isLatest) {
@@ -227,8 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Show loading state
         waterfall.innerHTML = '<p style="color:var(--text-muted);padding:20px;">加载中...</p>';
 
-        const snapshotUrl = `data/fanqie_female_new_ranks_${fileDateStr}.json?${cacheBuster}`;
-        const trendUrl = `data/trends/${dateStr}.json?${cacheBuster}`;
+        const snapshotUrl = P.snapshot(dateStr);
+        const trendUrl = P.trend(dateStr);
 
         // Load snapshot + trends in parallel
         Promise.all([
@@ -448,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rank = index + 1;
             const card = document.createElement('a');
             const bookId = extractBookId(book.url);
-            card.href = bookId ? `book.html?id=${encodeURIComponent(bookId)}` : 'javascript:void(0)';
+            card.href = bookId ? `book.html?board=${encodeURIComponent(currentSlug)}&id=${encodeURIComponent(bookId)}` : 'javascript:void(0)';
             card.rel = 'noopener';
             card.className = 'book-card';
 

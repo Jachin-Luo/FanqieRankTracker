@@ -2,7 +2,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const categoryButtons = document.getElementById('trend-category-buttons');
     const subtitle = document.getElementById('trend-subtitle');
     const rangeButtons = document.querySelectorAll('.range-btn');
-    const cacheBuster = `v=${Math.floor(Date.now() / 600000)}`;
+    const boardTabs = document.getElementById('board-tabs');
+
+    let boards = [];
+    let currentSlug = Boards.DEFAULT_SLUG;
+    let P = Boards.paths(currentSlug);
 
     let categories = [];
     let trendRows = [];
@@ -10,16 +14,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let marketSummaryData = null;
     let selectedCategory = '';
     let selectedDays = 7;
-
-    const genreGroups = [
-        { name: '古风言情', categories: ['古风世情', '古言脑洞', '宫斗宅斗', '种田'] },
-        { name: '现代言情', categories: ['现言脑洞', '豪门总裁', '职场婚恋', '青春甜宠'] },
-        { name: '幻想言情', categories: ['玄幻言情', '科幻末世', '悬疑脑洞', '女频悬疑'] },
-        { name: '快穿衍生', categories: ['快穿', '女频衍生'] },
-        { name: '年代民国', categories: ['年代', '民国言情'] },
-        { name: '娱乐星光', categories: ['星光璀璨'] },
-        { name: '游戏体育', categories: ['游戏体育'] },
-    ];
 
     const els = {
         marketSummary: document.getElementById('market-summary'),
@@ -33,42 +27,67 @@ document.addEventListener('DOMContentLoaded', () => {
         summaries: document.getElementById('summary-feed'),
     };
 
-    init();
+    bindRangeEvents();
+    bootstrap();
 
-    async function init() {
+    function bootstrap() {
+        Boards.loadBoards().then(list => {
+            boards = list;
+            currentSlug = Boards.currentSlug(boards.map(b => b.slug));
+            Boards.setSlug(currentSlug);
+            P = Boards.paths(currentSlug);
+            renderBoardTabs();
+            loadBoardData();
+        });
+    }
+
+    function renderBoardTabs() {
+        if (!boardTabs) return;
+        Boards.renderTabs(boardTabs, boards, currentSlug, slug => {
+            if (slug === currentSlug) return;
+            currentSlug = slug;
+            Boards.setSlug(slug);
+            P = Boards.paths(slug);
+            selectedCategory = '';
+            renderBoardTabs();
+            loadBoardData();
+        });
+        const back = document.querySelector('.back-link');
+        if (back) back.href = `index.html?board=${encodeURIComponent(currentSlug)}`;
+    }
+
+    async function loadBoardData() {
         try {
             const [dateIndex, latestIndex, latestAll, marketSummary] = await Promise.all([
-                fetchJson(`data/dates.json?${cacheBuster}`),
-                fetchJson(`api/lastest.json?${cacheBuster}`).catch(() => null),
-                fetchJson(`api/lastest/all.json?${cacheBuster}`)
-                    .catch(() => fetchJson(`data/latest_ranks.json?${cacheBuster}`)),
-                fetchJson(`data/market_summary.json?${cacheBuster}`).catch(() => null),
+                Boards.fetchJson(P.dates).catch(() => ({ dates: [] })),
+                Boards.fetchJson(P.apiIndex).catch(() => null),
+                Boards.fetchJson(P.apiAll).catch(() => Boards.fetchJson(P.latest)),
+                Boards.fetchJson(P.market).catch(() => null),
             ]);
             latestData = latestAll;
             marketSummaryData = marketSummary;
 
             categories = latestIndex && latestIndex.types
                 ? latestIndex.types.filter(item => item.type !== 'all').map(item => item.type)
-                : await loadCategoriesFallback();
+                : (latestAll.categories || []).map(cat => cat.name);
 
             const dates = (dateIndex.dates || []).slice().sort();
             const trendDates = dates.slice(1);
             const trendFiles = await Promise.all(
-                trendDates.map(date => fetchJson(`data/trends/${date}.json?${cacheBuster}`).catch(() => null))
+                trendDates.map(date => Boards.fetchJson(P.trend(date)).catch(() => null))
             );
             trendRows = trendFiles
                 .filter(Boolean)
                 .map(item => ({ date: item.date, prevDate: item.prev_date, trends: item.trends || {} }))
                 .sort((a, b) => a.date.localeCompare(b.date));
 
-            if (trendRows.length === 0 || categories.length === 0) {
-                renderEmpty('暂无可分析的趋势数据。');
+            if (categories.length === 0) {
+                renderEmpty('暂无可分析的数据。');
                 return;
             }
 
             selectedCategory = getInitialCategory();
             renderCategoryButtons();
-            bindEvents();
             render();
         } catch (err) {
             console.error(err);
@@ -76,19 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function loadCategoriesFallback() {
-        const latest = await fetchJson(`data/latest_ranks.json?${cacheBuster}`);
-        return (latest.categories || []).map(cat => cat.name);
-    }
-
-    function fetchJson(url) {
-        return fetch(url).then(response => {
-            if (!response.ok) throw new Error(`Failed to load ${url}`);
-            return response.json();
-        });
-    }
-
-    function bindEvents() {
+    function bindRangeEvents() {
         rangeButtons.forEach(btn => {
             btn.addEventListener('click', () => {
                 rangeButtons.forEach(item => item.classList.remove('active'));
@@ -128,6 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function render() {
+        renderMarketBoard();
+
         const rows = getWindowRows()
             .map(row => ({
                 date: row.date,
@@ -136,14 +145,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }))
             .filter(row => row.trend);
 
-        if (rows.length === 0) {
-            renderEmpty(`${selectedCategory} 暂无趋势数据。`);
-            return;
-        }
+        subtitle.textContent = rows.length
+            ? `${selectedCategory} · ${rows[0].date} 至 ${rows[rows.length - 1].date} · ${rows.length} 个观察日`
+            : `${selectedCategory} · 暂无趋势数据`;
 
-        subtitle.textContent = `${selectedCategory} · ${rows[0].date} 至 ${rows[rows.length - 1].date} · ${rows.length} 个观察日`;
-
-        renderMarketBoard(getWindowRows());
         renderList(els.reads, collectReads(rows));
         renderList(els.newBooks, collectNewBooks(rows));
         renderList(els.risers, collectRisers(rows));
@@ -155,57 +160,39 @@ document.addEventListener('DOMContentLoaded', () => {
         return trendRows.slice(-selectedDays);
     }
 
-    function summarizeRows(rows) {
-        return rows.reduce((acc, row) => {
-            const trend = row.trend;
-            const riserCount = (trend.top_risers || []).length;
-            const fallerCount = (trend.top_fallers || []).length;
-            const readCount = (trend.reads_growth || []).length;
-            const readGrowthTotal = (trend.reads_growth || []).reduce((sum, item) => sum + parseReadsGrowth(item.growth), 0);
-            acc.newCount += Number(trend.new_count || 0);
-            acc.droppedCount += Number(trend.dropped_count || 0);
-            acc.riserCount += riserCount;
-            acc.fallerCount += fallerCount;
-            acc.readCount += readCount;
-            acc.readGrowthTotal += readGrowthTotal;
-            if ((trend.new_count || 0) || (trend.dropped_count || 0) || riserCount || fallerCount || readCount) {
-                acc.activeDays += 1;
-            }
-            return acc;
-        }, { newCount: 0, droppedCount: 0, riserCount: 0, fallerCount: 0, readCount: 0, readGrowthTotal: 0, activeDays: 0 });
-    }
+    // ========== 全站热点：直接渲染 build 算好的 market_summary（按周期）==========
+    function renderMarketBoard() {
+        const periodKey = selectedDays === 'all' ? 'all' : String(selectedDays);
+        const periodLabel = selectedDays === 'all' ? '全部样本' : `近 ${selectedDays} 日`;
+        const data = marketSummaryData && marketSummaryData.periods
+            ? marketSummaryData.periods[periodKey]
+            : null;
 
-    function renderMarketBoard(rowsWindow) {
-        const hotGenres = collectHotGenres(rowsWindow);
-        const hotTypes = collectHotTypes(rowsWindow);
-        const hotThemes = collectHotThemes(rowsWindow);
+        const hotGenres = (data && data.hot_genres) || [];
+        const hotTypes = (data && data.hot_types) || [];
+        const hotThemes = (data && data.hot_themes) || [];
 
         if (!hotTypes.length) {
-            els.marketSummary.textContent = '暂无足够数据判断全站热点。';
-            els.marketSource.textContent = '暂无数据';
+            els.marketSummary.textContent = (data && data.summary) || '暂无足够数据判断全站热点。';
+            els.marketSource.textContent = data && data.source === 'ai'
+                ? `AI 总结 · ${data.period || periodLabel}` : '暂无数据';
             els.hotGenres.innerHTML = '<p class="muted-line">暂无数据。</p>';
             els.hotTypes.innerHTML = '<p class="muted-line">暂无数据。</p>';
             els.hotThemes.innerHTML = '<p class="muted-line">暂无数据。</p>';
             return;
         }
 
-        const topGenres = hotGenres.slice(0, 2).map(item => item.name).join('、');
-        const topTypes = hotTypes.slice(0, 3).map(item => item.name).join('、');
-        const topThemes = hotThemes.slice(0, 6).map(item => item.name).join('、');
-        const period = selectedDays === 'all' ? '全部样本' : `近 ${selectedDays} 日`;
-        const fallbackSummary = `${period}里，${topGenres || topTypes} 的阅读增长更强，具体分类以 ${topTypes} 的新增在读更集中；新书题材上 ${topThemes} 更高频，说明读者仍偏好强设定、强情绪钩子和明确爽点。`;
-        const summaryData = getMarketSummaryForPeriod();
-        els.marketSummary.textContent = summaryData ? summaryData.summary : fallbackSummary;
-        els.marketSource.textContent = summaryData && summaryData.source === 'ai'
-            ? `AI 总结 · ${summaryData.period || period}`
-            : `规则统计 · ${period}`;
+        els.marketSummary.textContent = data.summary || data.fallback_summary || '';
+        els.marketSource.textContent = data.source === 'ai'
+            ? `AI 总结 · ${data.period || periodLabel}`
+            : `规则统计 · ${data.period || periodLabel}`;
 
         els.hotGenres.innerHTML = hotGenres.slice(0, 5).map((item, index) => `
             <div class="hot-type-row hot-type-row-static genre-row">
                 <span>${index + 1}</span>
                 <strong>${escapeHtml(item.name)}</strong>
-                <small>${escapeHtml(item.categoryText)} · 新增在读 ${formatReads(item.readGrowthTotal)} · 增长作品 ${item.readCount}</small>
-                <em>${formatReads(item.readGrowthTotal)}</em>
+                <small>${escapeHtml((item.categories || []).join(' / '))} · 新增在读 ${formatReads(item.read_growth_total)} · 增长作品 ${item.read_count || 0}</small>
+                <em>${formatReads(item.read_growth_total)}</em>
             </div>
         `).join('');
 
@@ -213,106 +200,20 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="hot-type-row" type="button" data-type="${escapeAttr(item.name)}">
                 <span>${index + 1}</span>
                 <strong>${escapeHtml(item.name)}</strong>
-                <small>新增在读 ${formatReads(item.readGrowthTotal)} · 增长作品 ${item.readCount}</small>
-                <em>${formatReads(item.readGrowthTotal)}</em>
+                <small>新增在读 ${formatReads(item.read_growth_total)} · 增长作品 ${item.read_count || 0}</small>
+                <em>${formatReads(item.read_growth_total)}</em>
             </button>
         `).join('');
 
         els.hotTypes.querySelectorAll('.hot-type-row').forEach(btn => {
-            btn.addEventListener('click', () => {
-                selectCategory(btn.dataset.type);
-            });
+            btn.addEventListener('click', () => selectCategory(btn.dataset.type));
         });
 
         els.hotThemes.innerHTML = hotThemes.slice(0, 14).map(item => `
-            <span class="theme-chip" title="新书 ${item.count} 本，覆盖 ${item.categories.size} 个类型">
+            <span class="theme-chip" title="新书 ${item.count} 本，覆盖 ${item.category_count || 0} 个类型">
                 ${escapeHtml(item.name)} <small>${item.count}</small>
             </span>
         `).join('');
-    }
-
-    function collectHotGenres(rowsWindow) {
-        const hotTypes = collectHotTypes(rowsWindow);
-        const hotTypeMap = new Map(hotTypes.map(item => [item.name, item]));
-
-        return genreGroups.map(group => {
-            const matched = group.categories
-                .filter(name => categories.includes(name))
-                .map(name => hotTypeMap.get(name) || {
-                    name,
-                    score: 0,
-                    newCount: 0,
-                    droppedCount: 0,
-                    readCount: 0,
-                    readGrowthTotal: 0,
-                    activeDays: 0,
-                });
-
-            const score = matched.reduce((sum, item) => sum + item.score, 0);
-            const lead = matched.slice().sort((a, b) => b.score - a.score)[0];
-            return {
-                name: group.name,
-                score,
-                newCount: matched.reduce((sum, item) => sum + item.newCount, 0),
-                droppedCount: matched.reduce((sum, item) => sum + item.droppedCount, 0),
-                readCount: matched.reduce((sum, item) => sum + item.readCount, 0),
-                readGrowthTotal: matched.reduce((sum, item) => sum + item.readGrowthTotal, 0),
-                activeDays: matched.reduce((sum, item) => sum + item.activeDays, 0),
-                leadCategory: lead ? lead.name : group.categories[0],
-                categoryText: matched.map(item => item.name).join(' / '),
-            };
-        })
-            .filter(item => item.score > 0 && item.leadCategory)
-            .sort((a, b) => b.score - a.score);
-    }
-
-    function collectHotTypes(rowsWindow) {
-        return categories.map(name => {
-            const rows = rowsWindow
-                .map(row => ({ trend: row.trends[name] || null }))
-                .filter(row => row.trend);
-            const totals = summarizeRows(rows);
-            return {
-                name,
-                score: totals.readGrowthTotal,
-                newCount: totals.newCount,
-                droppedCount: totals.droppedCount,
-                readCount: totals.readCount,
-                readGrowthTotal: totals.readGrowthTotal,
-                activeDays: totals.activeDays,
-            };
-        })
-            .filter(item => item.readGrowthTotal > 0)
-            .sort((a, b) => b.readGrowthTotal - a.readGrowthTotal || b.readCount - a.readCount);
-    }
-
-    function collectHotThemes(rowsWindow) {
-        const keywords = [
-            '重生', '穿书', '快穿', '系统', '空间', '团宠', '萌宝', '幼崽', '女配', '炮灰',
-            '反派', '权臣', '宅斗', '宫斗', '和离', '替嫁', '逃荒', '种田', '美食', '经商',
-            '年代', '七零', '八零', '军婚', '豪门', '总裁', '真假千金', '先婚后爱', '追妻',
-            '甜宠', '双洁', '强制爱', '无CP', '末世', '废土', '天灾', '囤货', '异能',
-            '国运', '星际', '修仙', '玄学', '无限流', '悬疑', '直播', '综艺', '娱乐圈',
-            '校园', '暗恋', '青梅竹马', '民国', '兽世', '远古', '基建'
-        ];
-        const scoreMap = new Map(keywords.map(name => [name, { name, count: 0, categories: new Set() }]));
-
-        const latestBookMap = buildLatestBookMap();
-
-        rowsWindow.forEach(row => {
-            categories.forEach(catName => {
-                const trend = row.trends[catName];
-                if (!trend) return;
-                (trend.new_books || []).forEach(title => {
-                    const book = latestBookMap.get(title) || {};
-                    addThemeHits(scoreMap, keywords, `${title} ${book.intro || ''}`, catName, 1);
-                });
-            });
-        });
-
-        return Array.from(scoreMap.values())
-            .filter(item => item.count > 0)
-            .sort((a, b) => b.count - a.count || b.categories.size - a.categories.size);
     }
 
     function buildLatestBookMap() {
@@ -329,17 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function extractBookId(url) {
         const match = String(url || '').match(/\/page\/(\d+)/);
         return match ? match[1] : '';
-    }
-
-    function addThemeHits(scoreMap, keywords, text, categoryName, weight) {
-        const source = String(text || '');
-        if (!source) return;
-        keywords.forEach(keyword => {
-            if (!source.includes(keyword)) return;
-            const item = scoreMap.get(keyword);
-            item.count += weight;
-            item.categories.add(categoryName);
-        });
     }
 
     function collectNewBooks(rows) {
@@ -396,8 +286,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const book = latestBookMap.get(item.title) || {};
             const bookId = extractBookId(book.url);
             const detailUrl = bookId
-                ? `book.html?id=${encodeURIComponent(bookId)}`
-                : `book.html?title=${encodeURIComponent(item.title)}`;
+                ? `book.html?board=${encodeURIComponent(currentSlug)}&id=${encodeURIComponent(bookId)}`
+                : `book.html?board=${encodeURIComponent(currentSlug)}&title=${encodeURIComponent(item.title)}`;
 
             return `
             <a class="compact-row compact-row-link" href="${detailUrl}" target="_blank" rel="noopener noreferrer">
@@ -447,14 +337,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return Number(String(value || '0').replace('+', '')) || 0;
     }
 
-    function getMarketSummaryForPeriod() {
-        if (!marketSummaryData || !marketSummaryData.periods) return null;
-        const key = selectedDays === 'all' ? 'all' : String(selectedDays);
-        const item = marketSummaryData.periods[key];
-        if (!item || !item.summary) return null;
-        return item;
-    }
-
     function parseReadsGrowth(value) {
         const raw = String(value || '0').replace('+', '').replace(',', '').trim();
         const num = parseFloat(raw);
@@ -463,8 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function formatReads(value) {
-        if (value >= 10000) return `+${(value / 10000).toFixed(1)}万`;
-        return `+${Math.round(value)}`;
+        const num = Number(value || 0);
+        if (num >= 10000) return `+${(num / 10000).toFixed(1)}万`;
+        return `+${Math.round(num)}`;
     }
 
     function renderMarkdown(text) {

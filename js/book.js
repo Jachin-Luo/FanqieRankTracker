@@ -14,16 +14,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
         const bookId = params.get('id');
         const bookTitle = params.get('title');
+        const slug = params.get('board') || Boards.DEFAULT_SLUG;
+        const P = Boards.paths(slug);
+        // 顶部导航带上当前榜单
+        const back = document.getElementById('topbar-back');
+        const trendLink = document.getElementById('topbar-trend');
+        if (back) back.href = `index.html?board=${encodeURIComponent(slug)}`;
+        if (trendLink) trendLink.href = `trend.html?board=${encodeURIComponent(slug)}`;
         if (!bookId && !bookTitle) {
             renderEmpty('缺少作品 ID。');
             return;
         }
 
         try {
-            const dateIndex = await fetchJson(`data/dates.json?${cacheBuster}`);
+            const dateIndex = await fetchJson(P.dates);
             const dates = (dateIndex.dates || []).slice().sort().slice(-maxDays);
             const snapshots = await Promise.all(
-                dates.map(date => fetchJson(`${snapshotUrl(date)}?${cacheBuster}`).catch(() => null))
+                dates.map(date => fetchJson(P.snapshot(date)).catch(() => null))
             );
             const records = collectBookRecords(bookId, bookTitle, dates, snapshots);
 
@@ -32,15 +39,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            renderBook(records);
+            renderBook(records, slug);
         } catch (err) {
             console.error(err);
             renderEmpty('作品详情加载失败，请稍后刷新重试。');
         }
-    }
-
-    function snapshotUrl(date) {
-        return `data/fanqie_female_new_ranks_${date.replace(/-/g, '')}.json`;
     }
 
     function fetchJson(url) {
@@ -73,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return records.sort((a, b) => a.date.localeCompare(b.date));
     }
 
-    function renderBook(records) {
+    function renderBook(records, slug) {
         const latest = records[records.length - 1];
         const book = latest.book;
         const chartRecords = compactRecordsByDate(records).filter(item => item.readsValue > 0);
@@ -305,10 +308,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderEmpty(message) {
+        const slug = new URLSearchParams(window.location.search).get('board') || Boards.DEFAULT_SLUG;
         detail.innerHTML = `
             <div class="book-empty-state">
                 <p>${escapeHtml(message)}</p>
-                <a href="index.html" class="back-link">返回榜单</a>
+                <a href="index.html?board=${encodeURIComponent(slug)}" class="back-link">返回榜单</a>
             </div>
         `;
     }

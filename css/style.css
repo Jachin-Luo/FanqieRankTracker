@@ -196,6 +196,68 @@ input:focus-visible {
     font-weight: 650;
 }
 
+/* ===== 两级榜单 Tab（频道 / 榜单类型）===== */
+.board-tabs {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.board-tab-row {
+    display: inline-flex;
+    gap: 4px;
+    padding: 3px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-soft);
+}
+
+.board-tab {
+    flex: 1;
+    height: 28px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 720;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+}
+
+.board-tab:hover:not(:disabled) {
+    color: var(--text-primary);
+}
+
+.board-tab.active {
+    background: var(--text-primary);
+    color: #ffffff;
+}
+
+.board-tab:disabled {
+    opacity: 0.38;
+    cursor: not-allowed;
+}
+
+.board-tab-channel.active {
+    background: linear-gradient(135deg, var(--accent), var(--info));
+}
+
+/* 风向标顶栏内联用法：两级 Tab 横排紧凑 */
+.board-tabs-inline {
+    margin-top: 0;
+    flex-direction: row;
+    gap: 6px;
+}
+
+.board-tabs-inline .board-tab {
+    flex: 0 0 auto;
+    height: 26px;
+    font-size: 0.74rem;
+}
+
 .update-date {
     display: inline-flex;
     margin-top: 10px;

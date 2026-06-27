@@ -1,0 +1,410 @@
+{
+  "discovered_at": "2026-06-27T11:59:12.856243",
+  "groups": {
+    "1_2": [
+      {
+        "text": "西方奇幻",
+        "href": "/rank/1_2_1141",
+        "cat_id": "1141"
+      },
+      {
+        "text": "东方仙侠",
+        "href": "/rank/1_2_1140",
+        "cat_id": "1140"
+      },
+      {
+        "text": "科幻末世",
+        "href": "/rank/1_2_8",
+        "cat_id": "8"
+      },
+      {
+        "text": "都市日常",
+        "href": "/rank/1_2_261",
+        "cat_id": "261"
+      },
+      {
+        "text": "都市修真",
+        "href": "/rank/1_2_124",
+        "cat_id": "124"
+      },
+      {
+        "text": "都市高武",
+        "href": "/rank/1_2_1014",
+        "cat_id": "1014"
+      },
+      {
+        "text": "历史古代",
+        "href": "/rank/1_2_273",
+        "cat_id": "273"
+      },
+      {
+        "text": "战神赘婿",
+        "href": "/rank/1_2_27",
+        "cat_id": "27"
+      },
+      {
+        "text": "都市种田",
+        "href": "/rank/1_2_263",
+        "cat_id": "263"
+      },
+      {
+        "text": "传统玄幻",
+        "href": "/rank/1_2_258",
+        "cat_id": "258"
+      },
+      {
+        "text": "历史脑洞",
+        "href": "/rank/1_2_272",
+        "cat_id": "272"
+      },
+      {
+        "text": "悬疑脑洞",
+        "href": "/rank/1_2_539",
+        "cat_id": "539"
+      },
+      {
+        "text": "都市脑洞",
+        "href": "/rank/1_2_262",
+        "cat_id": "262"
+      },
+      {
+        "text": "玄幻脑洞",
+        "href": "/rank/1_2_257",
+        "cat_id": "257"
+      },
+      {
+        "text": "悬疑灵异",
+        "href": "/rank/1_2_751",
+        "cat_id": "751"
+      },
+      {
+        "text": "抗战谍战",
+        "href": "/rank/1_2_504",
+        "cat_id": "504"
+      },
+      {
+        "text": "游戏体育",
+        "href": "/rank/1_2_746",
+        "cat_id": "746"
+      },
+      {
+        "text": "动漫衍生",
+        "href": "/rank/1_2_718",
+        "cat_id": "718"
+      },
+      {
+        "text": "男频衍生",
+        "href": "/rank/1_2_1016",
+        "cat_id": "1016"
+      }
+    ],
+    "1_1": [
+      {
+        "text": "西方奇幻",
+        "href": "/rank/1_1_1141",
+        "cat_id": "1141"
+      },
+      {
+        "text": "东方仙侠",
+        "href": "/rank/1_1_1140",
+        "cat_id": "1140"
+      },
+      {
+        "text": "科幻末世",
+        "href": "/rank/1_1_8",
+        "cat_id": "8"
+      },
+      {
+        "text": "都市日常",
+        "href": "/rank/1_1_261",
+        "cat_id": "261"
+      },
+      {
+        "text": "都市修真",
+        "href": "/rank/1_1_124",
+        "cat_id": "124"
+      },
+      {
+        "text": "都市高武",
+        "href": "/rank/1_1_1014",
+        "cat_id": "1014"
+      },
+      {
+        "text": "历史古代",
+        "href": "/rank/1_1_273",
+        "cat_id": "273"
+      },
+      {
+        "text": "战神赘婿",
+        "href": "/rank/1_1_27",
+        "cat_id": "27"
+      },
+      {
+        "text": "都市种田",
+        "href": "/rank/1_1_263",
+        "cat_id": "263"
+      },
+      {
+        "text": "传统玄幻",
+        "href": "/rank/1_1_258",
+        "cat_id": "258"
+      },
+      {
+        "text": "历史脑洞",
+        "href": "/rank/1_1_272",
+        "cat_id": "272"
+      },
+      {
+        "text": "悬疑脑洞",
+        "href": "/rank/1_1_539",
+        "cat_id": "539"
+      },
+      {
+        "text": "都市脑洞",
+        "href": "/rank/1_1_262",
+        "cat_id": "262"
+      },
+      {
+        "text": "玄幻脑洞",
+        "href": "/rank/1_1_257",
+        "cat_id": "257"
+      },
+      {
+        "text": "悬疑灵异",
+        "href": "/rank/1_1_751",
+        "cat_id": "751"
+      },
+      {
+        "text": "抗战谍战",
+        "href": "/rank/1_1_504",
+        "cat_id": "504"
+      },
+      {
+        "text": "游戏体育",
+        "href": "/rank/1_1_746",
+        "cat_id": "746"
+      },
+      {
+        "text": "动漫衍生",
+        "href": "/rank/1_1_718",
+        "cat_id": "718"
+      },
+      {
+        "text": "男频衍生",
+        "href": "/rank/1_1_1016",
+        "cat_id": "1016"
+      }
+    ],
+    "0_2": [
+      {
+        "text": "古风世情",
+        "href": "/rank/0_2_1139",
+        "cat_id": "1139"
+      },
+      {
+        "text": "科幻末世",
+        "href": "/rank/0_2_8",
+        "cat_id": "8"
+      },
+      {
+        "text": "游戏体育",
+        "href": "/rank/0_2_746",
+        "cat_id": "746"
+      },
+      {
+        "text": "女频衍生",
+        "href": "/rank/0_2_1015",
+        "cat_id": "1015"
+      },
+      {
+        "text": "玄幻言情",
+        "href": "/rank/0_2_248",
+        "cat_id": "248"
+      },
+      {
+        "text": "种田",
+        "href": "/rank/0_2_23",
+        "cat_id": "23"
+      },
+      {
+        "text": "年代",
+        "href": "/rank/0_2_79",
+        "cat_id": "79"
+      },
+      {
+        "text": "现言脑洞",
+        "href": "/rank/0_2_267",
+        "cat_id": "267"
+      },
+      {
+        "text": "宫斗宅斗",
+        "href": "/rank/0_2_246",
+        "cat_id": "246"
+      },
+      {
+        "text": "悬疑脑洞",
+        "href": "/rank/0_2_539",
+        "cat_id": "539"
+      },
+      {
+        "text": "古言脑洞",
+        "href": "/rank/0_2_253",
+        "cat_id": "253"
+      },
+      {
+        "text": "快穿",
+        "href": "/rank/0_2_24",
+        "cat_id": "24"
+      },
+      {
+        "text": "青春甜宠",
+        "href": "/rank/0_2_749",
+        "cat_id": "749"
+      },
+      {
+        "text": "星光璀璨",
+        "href": "/rank/0_2_745",
+        "cat_id": "745"
+      },
+      {
+        "text": "女频悬疑",
+        "href": "/rank/0_2_747",
+        "cat_id": "747"
+      },
+      {
+        "text": "职场婚恋",
+        "href": "/rank/0_2_750",
+        "cat_id": "750"
+      },
+      {
+        "text": "豪门总裁",
+        "href": "/rank/0_2_748",
+        "cat_id": "748"
+      },
+      {
+        "text": "民国言情",
+        "href": "/rank/0_2_1017",
+        "cat_id": "1017"
+      }
+    ],
+    "0_1": [
+      {
+        "text": "古风世情",
+        "href": "/rank/0_1_1139",
+        "cat_id": "1139"
+      },
+      {
+        "text": "科幻末世",
+        "href": "/rank/0_1_8",
+        "cat_id": "8"
+      },
+      {
+        "text": "游戏体育",
+        "href": "/rank/0_1_746",
+        "cat_id": "746"
+      },
+      {
+        "text": "女频衍生",
+        "href": "/rank/0_1_1015",
+        "cat_id": "1015"
+      },
+      {
+        "text": "玄幻言情",
+        "href": "/rank/0_1_248",
+        "cat_id": "248"
+      },
+      {
+        "text": "种田",
+        "href": "/rank/0_1_23",
+        "cat_id": "23"
+      },
+      {
+        "text": "年代",
+        "href": "/rank/0_1_79",
+        "cat_id": "79"
+      },
+      {
+        "text": "现言脑洞",
+        "href": "/rank/0_1_267",
+        "cat_id": "267"
+      },
+      {
+        "text": "宫斗宅斗",
+        "href": "/rank/0_1_246",
+        "cat_id": "246"
+      },
+      {
+        "text": "悬疑脑洞",
+        "href": "/rank/0_1_539",
+        "cat_id": "539"
+      },
+      {
+        "text": "古言脑洞",
+        "href": "/rank/0_1_253",
+        "cat_id": "253"
+      },
+      {
+        "text": "快穿",
+        "href": "/rank/0_1_24",
+        "cat_id": "24"
+      },
+      {
+        "text": "青春甜宠",
+        "href": "/rank/0_1_749",
+        "cat_id": "749"
+      },
+      {
+        "text": "星光璀璨",
+        "href": "/rank/0_1_745",
+        "cat_id": "745"
+      },
+      {
+        "text": "女频悬疑",
+        "href": "/rank/0_1_747",
+        "cat_id": "747"
+      },
+      {
+        "text": "职场婚恋",
+        "href": "/rank/0_1_750",
+        "cat_id": "750"
+      },
+      {
+        "text": "豪门总裁",
+        "href": "/rank/0_1_748",
+        "cat_id": "748"
+      },
+      {
+        "text": "民国言情",
+        "href": "/rank/0_1_1017",
+        "cat_id": "1017"
+      }
+    ]
+  },
+  "tabs": [],
+  "suggestions": [
+    {
+      "prefix": "0_1",
+      "init_url": "https://fanqienovel.com/rank/0_1_1139",
+      "category_count": 18,
+      "sample_categories": "古风世情、科幻末世、游戏体育、女频衍生"
+    },
+    {
+      "prefix": "0_2",
+      "init_url": "https://fanqienovel.com/rank/0_2_1139",
+      "category_count": 18,
+      "sample_categories": "古风世情、科幻末世、游戏体育、女频衍生"
+    },
+    {
+      "prefix": "1_1",
+      "init_url": "https://fanqienovel.com/rank/1_1_1141",
+      "category_count": 19,
+      "sample_categories": "西方奇幻、东方仙侠、科幻末世、都市日常"
+    },
+    {
+      "prefix": "1_2",
+      "init_url": "https://fanqienovel.com/rank/1_2_1141",
+      "category_count": 19,
+      "sample_categories": "西方奇幻、东方仙侠、科幻末世、都市日常"
+    }
+  ]
+}
