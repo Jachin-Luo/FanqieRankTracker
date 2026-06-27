@@ -2,7 +2,7 @@
 
 [![中文](https://img.shields.io/badge/lang-中文-red)](README.md)
 
-> 👗 Focused exclusively on **Fanqie Novel's Female Category (女频)**, featuring daily automated tracking of new book rankings and AI-powered trend analysis, deployed as a premium online dashboard.
+> 📚 Tracks **all of Fanqie Novel's male & female channel rankings** (Female New / Female Reading / Male New / Male Reading), with daily automated scraping and AI-powered trend analysis, deployed as a premium online dashboard.
 
 ---
 
@@ -10,11 +10,14 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🕷️ Auto Scraping | Daily automated scraping of Top 30 new books across all sub-categories within Fanqie's Female section |
+| 🕷️ Auto Scraping | Daily automated scraping of Top 30 per category across 4 boards; categories auto-discovered from each board page |
+| 🔀 Multi-board Switch | Two-level tabs (Female / Male × New / Reading) for one-click switching, each board's data independent |
 | 📊 Trend Analysis | Automatic day-over-day comparison: new entries / dropped / rank changes / readership growth |
 | 🤖 AI Summary | OpenAI-compatible API integration for per-category market trend analysis |
+| 🧭 Type Trend Page | Standalone trend page aggregating multi-day data, summarizing genre tracks, hot categories and frequent themes per channel; rule-based fallback when no API |
 | 🖥️ Dashboard | Dark editorial-style dashboard with typewriter animation and waterfall book cards |
 | 📱 Responsive | Full mobile support with slide-out sidebar menu |
+| 🔌 Data API | Per-board (slug-namespaced) static `lastest` JSON endpoints, readable by type |
 | ⚡ Fully Automated | GitHub Actions + GitHub Pages, zero server maintenance |
 
 ---
@@ -59,11 +62,31 @@ Go to repo → **Settings** → **Secrets and variables** → **Actions** → **
 2. Click **Run workflow** → **Run workflow** on the top-right
 3. Wait for the workflow to complete (~3–5 minutes)
 
-After a successful run, data files will be generated in the `data/` directory. Open the GitHub Pages link to view your dashboard.
+After a successful run, data files will be generated under `data/<board>/`. Open the GitHub Pages link to view your dashboard.
 
 ### Step 5: Sit Back and Relax
 
 GitHub Actions is configured to run automatically at **UTC 00:00 (08:00 Beijing Time)** every day. No further manual action is needed — data and dashboard will auto-update daily.
+
+Use the sidebar **two-level tabs** to switch between Female / Male and New / Reading boards (tabs with no data are auto-disabled). The **Trend** button (top-right) opens `trend.html` for genre tracks, hot categories and frequent themes over the last 7 / 14 / 30 days or all time.
+
+---
+
+## 🔌 Data API
+
+The build script generates slug-namespaced static JSON endpoints on GitHub Pages. Board slugs: `female-new`, `female-read`, `male-new`, `male-read`.
+
+| Type | Path | Description |
+|---|---|---|
+| Board index | `api/boards.json` | All boards that have data, with slug / channel / latest date |
+| Type index | `api/<slug>/lastest.json` | All available types for the board and their URLs |
+| Full data | `api/<slug>/lastest/all.json` | `type=all`, all categories, trends and books for the board |
+| Single type | `api/<slug>/lastest/<type>.json` | Data for a specific type, e.g. `api/female-new/lastest/古风世情.json` |
+
+```bash
+curl https://<your-username>.github.io/FanqieRankTracker/api/boards.json
+curl https://<your-username>.github.io/FanqieRankTracker/api/female-new/lastest/all.json
+```
 
 ---
 
@@ -108,16 +131,30 @@ FanqieRankTracker/
 ├── css/
 │   └── style.css               # Dark editorial theme styles
 ├── js/
-│   └── app.js                  # Frontend rendering (waterfall + typewriter animation)
+│   ├── boards.js               # Shared multi-board utils (board load / ?board sync / path factory)
+│   ├── app.js                  # Dashboard rendering (waterfall + typewriter animation)
+│   ├── trend.js                # Type trend page logic
+│   └── book.js                 # Book detail page logic
 ├── scripts/
-│   └── build_latest.py         # Trend comparison + AI analysis build script
+│   └── build_latest.py         # Trend comparison + AI analysis build script (all enabled boards)
 ├── data/
-│   ├── fanqie_female_new_ranks_YYYYMMDD.json  # Daily raw snapshots
-│   ├── latest_ranks.json       # Latest aggregated data (dashboard source)
-│   └── trends/
-│       └── YYYY-MM-DD.json     # Trend archives
+│   └── <slug>/                 # One directory per board, e.g. female-new / male-new
+│       ├── snapshots/
+│       │   └── ranks_YYYYMMDD.json   # Daily raw snapshots
+│       ├── trends/
+│       │   └── YYYY-MM-DD.json       # Trend archives
+│       ├── latest_ranks.json   # Latest aggregated data (dashboard source)
+│       ├── dates.json          # Available date index
+│       └── market_summary.json # Market hot AI/rule summary
+├── api/
+│   ├── boards.json             # Board index
+│   └── <slug>/lastest/         # Per-board latest static endpoints (all + per type)
+├── boards_config.py            # Board registry (single source of truth: 4 boards + genres + keywords)
 ├── index.html                  # Dashboard entry page
-├── scrape_fanqie_ranks.py      # Fanqie Novel scraper (Playwright)
+├── trend.html                  # Type trend analysis page
+├── book.html                   # Book detail page
+├── scrape_fanqie_ranks.py      # Multi-board Fanqie Novel scraper (Playwright)
+├── discover_boards.py          # Board discovery helper (to obtain real /rank/ URLs)
 ├── requirements.txt            # Python dependencies
 └── README.md                   # Chinese documentation
 ```
@@ -164,9 +201,9 @@ Yes! The system will automatically fall back to rule-based summaries (e.g., "3 n
 </details>
 
 <details>
-<summary><b>Q: Can I track other rankings (e.g., male-oriented)?</b></summary>
+<summary><b>Q: How do I add/remove boards or track other channels?</b></summary>
 
-Yes, modify the `init_url` variable in `scrape_fanqie_ranks.py` to point to the desired ranking page URL.
+All 4 male & female boards are built in and enabled. To adjust, edit `BOARDS` in `boards_config.py`: each board has `slug` / `name` / `channel` / `init_url` / `rank_prefix` / `enabled`. Use `discover_boards.py` on a machine that can reach Fanqie to obtain a new board's real `/rank/` URL.
 
 </details>
 
